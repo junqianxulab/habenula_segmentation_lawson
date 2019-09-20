@@ -498,9 +498,11 @@ class ImageViewer(QWidget):
         if cross != self.mouseCursorCross:
             self.mouseCursorCross = cross
             if cross:
-                self.setCursor(QCursor(QtCore.Qt.CrossCursor))
+                #self.setCursor(QCursor(QtCore.Qt.CrossCursor))
+                self.setCursor(QtCore.Qt.CrossCursor)
             else:
-                self.setCursor(QCursor(QtCore.Qt.ArrowCursor))
+                #self.setCursor(QCursor(QtCore.Qt.ArrowCursor))
+                self.setCursor(QtCore.Qt.ArrowCursor)
 
     def getZoomFactors(self):
         return self.zoomFactors

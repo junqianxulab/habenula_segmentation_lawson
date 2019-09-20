@@ -5,6 +5,8 @@ import numpy as np
 import os
 import sys
 
+filter_low_intensity = True
+
 if len(sys.argv) < 3:
     sys.stderr.write('Usage: %s ref_nifti csv_filename [output_nifti_filename]\n' % os.path.basename(sys.argv[0]))
     sys.exit(-1)
@@ -101,6 +103,17 @@ dat_out = np.zeros(img.shape, dtype=np.int8)
 hdr.set_data_dtype(np.int8)
 for voxel in lst_voxel:
     dat_out[voxel] = 1
+
+if filter_low_intensity:
+    dat_ref = img.get_data()
+    ary_intensity = dat_ref[dat_out > 0]
+    ary_intensity.sort()
+    q1 = ary_intensity[ary_intensity.shape[0]/4]
+    q3 = ary_intensity[ary_intensity.shape[0]*3/4]
+    iqr = q3 - q1
+    of1 = q1 - 1.5*iqr
+    dat_out[dat_ref < of1] = 0
+
 img_out = nib.Nifti1Image(dat_out, img.affine, hdr)
 nib.save(img_out, fn_out)
 
