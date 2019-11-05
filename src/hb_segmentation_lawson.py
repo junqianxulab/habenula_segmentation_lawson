@@ -425,6 +425,16 @@ class ImageViewer(QWidget):
 
         self.name = name
         self.imageRaw = self.loadImage.data
+
+        self.spinMin.setMaximum(int(self.imageRaw.max()*1.2))
+        self.spinMax.setMaximum(int(self.imageRaw.max()*1.2))
+        #self.iMin = int(max(0, self.imageRaw.min()*1.2))
+        self.iMin = 0
+        self.iMax = int(self.imageRaw.max()*0.8)
+
+        self.spinMin.setValue(self.iMin)
+        self.spinMax.setValue(self.iMax)
+
         self.imageRGB = convertImageRGB(resetIntensity(self.imageRaw, iMin=self.iMin, iMax=self.iMax))
         self.setIJK()
         self.drawBaseImage()
