@@ -217,6 +217,9 @@ class LoadImage:
 
     def readNifti1(self, filename):
         img = nibabel.load(filename)
+        if img.affine[0][0] > 0:
+            print 'WARNING: Check image orientation'
+
         hdr = img.get_header()
         self.zooms = hdr.get_zooms()
         self.data = img.get_data()
