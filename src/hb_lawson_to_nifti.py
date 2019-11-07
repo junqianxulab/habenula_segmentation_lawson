@@ -15,11 +15,16 @@ fn_ref = sys.argv[1]
 fn_csv = sys.argv[2]
 if len(sys.argv) > 3:
     fn_out = sys.argv[3]
+    if bn_out[-3:] == '.gz':
+        bn_out = bn_out[:-3]
+    if bn_out[-4:] == '.nii':
+        bn_out = bn_out[:-4]
 else:
-    fn_out = fn_csv
-    if fn_out[-4:] == '.csv':
-        fn_out = fn_out[:-4]
-    fn_out += '.nii.gz'
+    bn_out = fn_csv
+    if bn_out[-4:] == '.csv':
+        bn_out = bn_out[:-4]
+    fn_out = bn_out + '.nii.gz'
+
 
 def is_left(point, v0, v1):
     ax, ay = v0
@@ -81,6 +86,8 @@ def lawson_csv_to_voxel(filename):
         print('File not found: %s' % filename)
         return None
     lst_voxel = []
+    lst_voxel_lr = {'r':[], 'l':[]}
+
     lr = 'r'
     with open(filename) as fin:
         line = fin.readline() # Right
@@ -90,13 +97,14 @@ def lawson_csv_to_voxel(filename):
         while line[:3] != 'End':
             lst = [float(value) for value in line.strip().split(',')]
             lst_voxel += pixel_to_voxel(lst, lr=lr)
+            lst_voxel_lr[lr] += pixel_to_voxel(lst, lr=lr)
             line = fin.readline()
             if line[:4] == 'Left':
                 line = fin.readline()
                 lr = 'l'
-    return lst_voxel
+    return lst_voxel, lst_voxel_lr
 
-lst_voxel = lawson_csv_to_voxel(fn_csv)
+lst_voxel, lst_voxel_lr = lawson_csv_to_voxel(fn_csv)
 img = nib.load(fn_ref)
 hdr = img.header
 dat_out = np.zeros(img.shape, dtype=np.int8)
@@ -116,4 +124,12 @@ if filter_low_intensity:
 
 img_out = nib.Nifti1Image(dat_out, img.affine, hdr)
 nib.save(img_out, fn_out)
+
+for lr in ['r', 'l']:
+    dat_out_lr = np.zeros(img.shape, dtype=np.int8)
+    for voxel in lst_voxel_lr[lr]:
+        dat_out_lr[voxel] = 1
+    dat_out_lr[dat_out == 0] = 0
+    img_out = nib.Nifti1Image(dat_out_lr, img.affine, hdr)
+    nib.save(img_out, '%s_%s.nii.gz' % (bn_out, lr))
 
