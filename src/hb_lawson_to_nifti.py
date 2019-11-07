@@ -106,6 +106,8 @@ def lawson_csv_to_voxel(filename):
 
 lst_voxel, lst_voxel_lr = lawson_csv_to_voxel(fn_csv)
 img = nib.load(fn_ref)
+if img.affine[0][0] > 0:
+    print 'WARNING: Check image orientation'
 hdr = img.header
 dat_out = np.zeros(img.shape, dtype=np.int8)
 hdr.set_data_dtype(np.int8)
